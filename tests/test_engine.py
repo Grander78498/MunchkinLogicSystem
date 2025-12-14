@@ -2,13 +2,13 @@ import logging
 
 import pytest
 
-from engine import (
+from engine import LogicalEngine
+from models import (
     Disjunction,
     Conjunction,
     Negation,
     Implication,
     Equivalence,
-    LogicalEngine,
     Operation,
     Variable,
     CNF,
@@ -18,7 +18,7 @@ from engine import (
 
 @pytest.fixture
 def engine():
-    return LogicalEngine(level=logging.CRITICAL)
+    return LogicalEngine()
 
 
 @pytest.mark.parametrize(

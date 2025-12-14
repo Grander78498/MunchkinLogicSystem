@@ -11,15 +11,36 @@ from models import (
     CNF,
     Operation,
     Disjunct,
+    Variable,
 )
+
+# Импортируем базу знаний
+from knowledge_base import KnowledgeBase
 
 
 class EngineError(Exception): ...
 
 
 class LogicalEngine:
-    def __init__(self):
+    def __init__(self, knowledge_base: KnowledgeBase = None):
+        self.kb = knowledge_base or KnowledgeBase()
         self.axioms: list[Disjunct] = []
+
+    def load_axioms_from_kb(self):
+        """Загрузить аксиомы из базы знаний в движок"""
+        self.axioms.clear()
+        for axiom in self.kb.get_all_axioms():
+            cnf = self.to_cnf(axiom.expression, output=False)
+            if cnf.children:
+                self.axioms.extend(cnf.children)
+
+    def load_statements_from_kb(self):
+        """Загрузить высказывания из базы знаний в движок как единичные дизъюнкты"""
+        for statement in self.kb.get_all_statements():
+            # Создаем единичный дизъюнкт из высказывания
+            variable = Variable(statement.name)
+            disjunct = Disjunct(predicates=[variable])
+            self.axioms.append(disjunct)
 
     def add_axiom(self, operation: Operation) -> list[Disjunct]:
         cnf = self.to_cnf(operation, output=True)
@@ -28,6 +49,10 @@ class LogicalEngine:
         return cnf.children
 
     def resolution_method(self, operation: Operation):
+        # Загружаем аксиомы и высказывания из базы знаний перед началом
+        self.load_axioms_from_kb()
+        self.load_statements_from_kb()
+        
         for i in range(len(self.axioms)):
             print(f"({i + 1}) {self.axioms[i]}")
 
