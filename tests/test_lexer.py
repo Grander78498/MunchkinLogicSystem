@@ -58,6 +58,13 @@ TEST_DATA = [
             Token(TokenType.EOL, None, 8),
         ],
     },
+    {
+        "input": '"уровень игрока 1 равен 10"',
+        "expected": [
+            Token(TokenType.IDENTIFIER, "уровень игрока 1 равен 10", 0),
+            Token(TokenType.EOL, None, 27),
+        ],
+    },
 ]
 
 

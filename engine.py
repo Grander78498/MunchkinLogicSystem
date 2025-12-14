@@ -47,14 +47,73 @@ class LogicalEngine:
         if cnf.children:
             self.axioms.extend(cnf.children)
         return cnf.children
+    
+    def check_correctness(self):
+        print("Проверка непротиворечивости системы")
+        self.load_axioms_from_kb()
+        self.load_statements_from_kb()
+        for i in range(len(self.axioms)):
+            print(f"({i + 1}) {self.axioms[i]}")
+        
+        i = 0
+        visited = []
+        new_axioms = []
+        while i < len(self.axioms) + len(new_axioms):
+            j = 0
+            while j < len(self.axioms) + len(new_axioms):
+                if (i, j) in visited:
+                    j += 1
+                    continue
+                visited.append((i, j))
+                if i >= len(self.axioms):
+                    i_axiom = new_axioms[i - len(self.axioms)]
+                else:
+                    i_axiom = self.axioms[i]
+                if j >= len(self.axioms):
+                    j_axiom = new_axioms[j - len(self.axioms)]
+                else:
+                    j_axiom = self.axioms[j]
+                resolve, has_contrary = i_axiom.add_predicate(j_axiom)
+                if has_contrary:
+                    first_str = f"({i + 1}) {i_axiom}"
+                    second_str = f"({len(self.axioms) + j + 1}) {j_axiom}"
+                    max_len = max(len(first_str), len(second_str))
+                    if len(first_str) == max_len:
+                        first_str += " |"
+                        second_str += " " * (max_len - len(second_str)) + " |"
+                    else:
+                        second_str += " |"
+                        first_str += " " * (max_len - len(first_str)) + " |"
+                    print(first_str)
+                    if len(resolve.children) == 0:
+                        print(
+                            " " * max_len
+                            + f" |--> Пустой дизъюнкт - система противоречива."
+                        )
+                    else:
+                        new_axioms.append(resolve)
+                        visited.append((i, len(new_axioms) - 1))
+                        print(
+                            " " * max_len
+                            + f" |--> ({len(self.axioms) + len(new_axioms)}) {resolve}"
+                        )
+
+                    print(second_str)
+                    print("\n\n")
+                    if len(resolve.children) == 0:
+                        return False
+                j += 1
+            i += 1
+        self.axioms.clear()
+        print("Система непротиворечива")
+        return True
 
     def resolution_method(self, operation: Operation):
         # Загружаем аксиомы и высказывания из базы знаний перед началом
+        if not self.check_correctness():
+            return
         self.load_axioms_from_kb()
         self.load_statements_from_kb()
-        
-        for i in range(len(self.axioms)):
-            print(f"({i + 1}) {self.axioms[i]}")
 
         cnf = self.to_cnf(Negation(operation), output=True)
 

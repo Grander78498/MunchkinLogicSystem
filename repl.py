@@ -32,13 +32,13 @@ class REPL:
                 self.process_line(line)
                 
             except KeyboardInterrupt:
-                print("\n⚠ Прервано. Используйте 'exit' для выхода")
+                print("\n Прервано. Используйте 'exit' для выхода")
             except LexerException as e:
-                print(f"✗ Ошибка лексера: {e}")
+                print(f" Ошибка лексера: {e}")
             except ParserException as e:
-                print(f"✗ Ошибка парсера: {e}")
+                print(f" Ошибка парсера: {e}")
             except Exception as e:
-                print(f"✗ Ошибка: {e}")
+                print(f" Ошибка: {e}")
     
     def print_welcome(self):
         """Вывести приветствие"""
@@ -185,13 +185,13 @@ class REPL:
         try:
             axiom_id = int(arg)
             if self.kb.remove_axiom(axiom_id):
-                print(f"✓ Аксиома ({axiom_id}) удалена")
+                print(f" Аксиома ({axiom_id}) удалена")
                 # Перезагрузить аксиомы в движок
                 self.engine.load_axioms_from_kb()
             else:
-                print(f"✗ Аксиома с ID {axiom_id} не найдена")
+                print(f" Аксиома с ID {axiom_id} не найдена")
         except ValueError:
-            print("✗ Ошибка: ID должен быть числом")
+            print(" Ошибка: ID должен быть числом")
     
     def cmd_load(self, filename: str):
         """Загрузить файл"""
@@ -223,18 +223,18 @@ class REPL:
                 except Exception as e:
                     print(f"  Строка {line_num}: Ошибка - {e}")
             
-            print(f"✓ Файл загружен")
+            print(f" Файл загружен")
             
         except FileNotFoundError:
-            print(f"✗ Файл не найден: {filename}")
+            print(f" Файл не найден: {filename}")
         except Exception as e:
-            print(f"✗ Ошибка при загрузке файла: {e}")
+            print(f" Ошибка при загрузке файла: {e}")
     
     def cmd_clear(self):
         """Очистить базу знаний"""
         self.kb.clear()
         self.engine.axioms.clear()
-        print("✓ База знаний очищена")
+        print(" База знаний очищена")
     
     def cmd_exit(self):
         """Выйти из программы"""
@@ -256,7 +256,7 @@ class REPL:
             if self.is_axiom(expression):
                 # Это аксиома (содержит ->)
                 axiom = self.kb.add_axiom(expression)
-                print(f"✓ Добавлена аксиома ({axiom.id}): {axiom.expression}")
+                print(f"Добавлена аксиома ({axiom.id}): {axiom.expression}")
                 
                 # Добавить в движок
                 self.engine.add_axiom(expression)
@@ -264,18 +264,18 @@ class REPL:
                 # Это высказывание
                 if isinstance(expression, Variable):
                     stmt = self.kb.add_statement(expression.name)
-                    print(f"✓ Добавлено высказывание [{stmt.id}]: {stmt.name}")
+                    print(f"Добавлено высказывание [{stmt.id}]: {stmt.name}")
                     # Также добавляем высказывание в движок как аксиому
                     self.engine.add_axiom(expression)
                 else:
-                    print("✗ Высказывание должно быть простым идентификатором")
+                    print("Высказывание должно быть простым идентификатором")
         
         except LexerException as e:
-            print(f"✗ Ошибка лексера: {e}")
+            print(f"Ошибка лексера: {e}")
         except ParserException as e:
-            print(f"✗ Ошибка парсера: {e}")
+            print(f" Ошибка парсера: {e}")
         except Exception as e:
-            print(f"✗ Ошибка: {e}")
+            print(f" Ошибка: {e}")
     
     def is_axiom(self, expression: Operation | Predicate) -> bool:
         """Проверить, является ли выражение аксиомой"""
@@ -306,11 +306,11 @@ class REPL:
             print(f"\n{'='*70}\n")
             
         except LexerException as e:
-            print(f"✗ Ошибка лексера: {e}")
+            print(f" Ошибка лексера: {e}")
         except ParserException as e:
-            print(f"✗ Ошибка парсера: {e}")
+            print(f" Ошибка парсера: {e}")
         except Exception as e:
-            print(f"✗ Ошибка: {e}")
+            print(f" Ошибка: {e}")
 
 
 def main():

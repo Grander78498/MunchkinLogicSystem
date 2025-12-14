@@ -133,7 +133,7 @@ class Lexer:
             # Строки в кавычках
             if self.current_char == '"':
                 self.advance()
-                self.parse_identifier(skip_spaces=True)
+                self.parse_string()
                 if self.current_char != '"':
                     raise LexerException("Незакрытая строка", self.token_pos)
                 self.advance()
@@ -157,6 +157,22 @@ class Lexer:
             self.current_value.append(self.current_char)
             self.advance()
         
+        new_token = Token(
+            type=TokenType.IDENTIFIER,
+            value="".join(self.current_value),
+            position=self.token_pos,
+        )
+        self.tokens.append(new_token)
+    
+    def parse_string(self):
+        """Парсинг строки в кавычках"""
+        self.current_value = []
+        # Собираем все символы до закрывающей кавычки
+        while self.current_char and self.current_char != '"':
+            self.current_value.append(self.current_char)
+            self.advance()
+        
+        # Создаем токен идентификатора из строки
         new_token = Token(
             type=TokenType.IDENTIFIER,
             value="".join(self.current_value),
