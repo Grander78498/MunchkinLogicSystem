@@ -10,15 +10,15 @@ from engine import (
     Equivalence,
     LogicalEngine,
     Operation,
-    Variable,
     CNF,
     Disjunct,
 )
+from models import Variable
 
 
 @pytest.fixture
 def engine():
-    return LogicalEngine(level=logging.CRITICAL)
+    return LogicalEngine()
 
 
 @pytest.mark.parametrize(

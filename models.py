@@ -24,15 +24,24 @@ class Predicate:
 
         if self.name != other.name:
             return False
-        match (self.args, other.args):
-            case (None, None):
-                return True
-            case (None, _) | (_, None):
+            
+        # Оба аргумента None
+        if self.args is None and other.args is None:
+            return True
+            
+        # Один из аргументов None, другой нет
+        if self.args is None or other.args is None:
+            return False
+            
+        # Оба аргумента списки - сравниваем длину и содержимое
+        if len(self.args) != len(other.args):
+            return False
+            
+        # Сравниваем аргументы поэлементно
+        for arg1, arg2 in zip(self.args, other.args):
+            if arg1 != arg2:
                 return False
-            case _:
-                for arg in self.args:
-                    if arg not in other.args:
-                        return False
+                
         return True
 
     def __str__(self):
@@ -130,6 +139,68 @@ class Implication(Operation):
 class Equivalence(Operation):
     def __init__(self, children: Sequence[Operation | Predicate]):
         super().__init__(EQUALS, children, priority=3)
+
+
+class ArithmeticOp(Operation):
+    """Базовый класс для арифметических операций"""
+    def __init__(self, op: str, children: Sequence[Operation | Predicate], priority: int):
+        super().__init__(op, children, priority)
+
+
+class Addition(ArithmeticOp):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("+", children, priority=2)
+
+
+class Subtraction(ArithmeticOp):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("-", children, priority=2)
+
+
+class Multiplication(ArithmeticOp):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("*", children, priority=1)
+
+
+class Division(ArithmeticOp):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("/", children, priority=1)
+
+
+class Comparison(Operation):
+    """Операции сравнения"""
+    def __init__(self, op: str, children: Sequence[Operation | Predicate]):
+        super().__init__(op, children, priority=3)
+
+
+class GreaterThan(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__(">", children)
+
+
+class LessThan(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("<", children)
+
+
+class GreaterThanOrEqual(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__(">=", children)
+
+
+class LessThanOrEqual(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("<=", children)
+
+
+class Equal(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("==", children)
+
+
+class NotEqual(Comparison):
+    def __init__(self, children: Sequence[Operation | Predicate]):
+        super().__init__("!=", children)
 
 
 class Disjunct(Operation):
@@ -230,11 +301,17 @@ class Disjunct(Operation):
 class CNF(Operation):
     def __init__(
         self,
-        operation: Operation | None = None,
+        operation: Operation | Predicate | None = None,
         disjuncts: Sequence[Operation] | None = None,
     ):
         if disjuncts is not None:
             super().__init__(AND, disjuncts, priority=1)
+            return
+
+        # Если operation - это Predicate, преобразуем его в Disjunct
+        if isinstance(operation, Predicate):
+            children = [Disjunct(predicates=[operation])]
+            super().__init__(AND, children, priority=1)
             return
 
         if type(operation) is Disjunction:
@@ -242,20 +319,25 @@ class CNF(Operation):
             super().__init__(AND, children, priority=1)
             return
 
-        children = list(operation.children)
-        i = 0
-        while i < len(children):
-            if type(children[i]) is Conjunction:
-                conjunct = children.pop(i)
-                children.append(conjunct.children[0])
-                children.append(conjunct.children[1])
-            elif type(children[i]) is Disjunction:
-                children[i] = Disjunct(children[i])
-                i += 1
-            else:
-                i += 1
+        # Если operation - это Operation, обрабатываем его children
+        if hasattr(operation, 'children'):
+            children = list(operation.children)
+            i = 0
+            while i < len(children):
+                if type(children[i]) is Conjunction:
+                    conjunct = children.pop(i)
+                    children.append(conjunct.children[0])
+                    children.append(conjunct.children[1])
+                elif type(children[i]) is Disjunction:
+                    children[i] = Disjunct(children[i])
+                    i += 1
+                else:
+                    i += 1
 
-        super().__init__(AND, children, priority=1)
+            super().__init__(AND, children, priority=1)
+        else:
+            # Если operation не имеет children, создаем пустой CNF
+            super().__init__(AND, [], priority=1)
 
     def simplify(self):
         for i in range(len(self.children)):
