@@ -242,6 +242,10 @@ class CNF(Operation):
             super().__init__(AND, children, priority=1)
             return
 
+        if type(operation) in (Variable, Negation):
+            super().__init__(AND, [operation], priority=1)
+            return
+        
         children = list(operation.children)
         i = 0
         while i < len(children):
