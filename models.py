@@ -37,7 +37,7 @@ class Predicate:
 
     def __str__(self):
         if self.args is None:
-            return self.name
+            return f'"{self.name}"'
         return self.name + "(" + ", ".join(str(arg) for arg in self.args) + ")"
 
     def __repr__(self):
